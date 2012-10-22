@@ -93,6 +93,19 @@ module Hamlbars
                    @engine.render(scope, locals, &block)
                  end
 
+
+      # Accommodate the following, cleaning if-else syntax:
+      # = hb 'if someprop' do
+      #   %p it was true
+      # = hb 'else' do
+      #   %p it was false
+      regex = /({{\s*\/\s*if\s*}}\s*{{\s*#\s*else\s*}}).*?({{\s*\/\s*else\s*}})/m
+      while template.match(regex)
+        # Replace everything from right to left.
+        template[$~.begin(2)...$~.end(2)] = "{{/if}}"
+        template[$~.begin(1)...$~.end(1)] = "{{else}}"
+      end
+
       if scope.respond_to? :logical_path
         path = scope.logical_path
       else
